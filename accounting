@@ -1,0 +1,140 @@
+from tkinter import *
+from tkinter import ttk, messagebox
+
+import datetime
+import os
+import jsonpickle
+jsonpickle.set_encoder_options('json', indent=4, separators=(',', ': '), ensure_ascii=False)
+
+
+class FileProvider:
+    def exist(path):
+        return os.path.exists(path)
+
+    def get(path):
+        file = open(path, 'r')
+        data = file.read()
+        file.close()
+        return data
+
+    def update_file(path, data):
+        file = open(path, 'w')
+        file.write(data)
+        file.close()
+
+class Order:
+    def __init__(self, client_name, phone_number, technique, equipment, malfunction, additionally):
+        self.client_name = client_name
+        self.phone_number = phone_number
+        self.technique = technique
+        self.equipment = equipment
+        self.malfunction = malfunction
+        self.additionally = additionally
+
+    def add_order(client_name, phone_number, technique, equipment, malfunction, additionally):
+        new_order = Order(client_name, phone_number, technique, equipment, malfunction, additionally)
+
+        if not FileProvider.exist('orders.json'):
+            list_new_order = [new_order]
+            list_new_orders_code = jsonpickle.encode(list_new_order)
+
+        else:            
+            list_orders_code = FileProvider.get('orders.json')
+            list_orders = jsonpickle.decode(list_orders_code)
+            list_orders.append(new_order)
+            list_new_orders_code = jsonpickle.encode(list_orders)
+
+        FileProvider.update_file('orders.json', list_new_orders_code)
+
+
+def save_btn():
+    client_name = name.get()
+    phone_number = phone.get()
+    technique = technic.get()
+    equipment = kit.get()
+    malfunction = defect.get()
+    additionally = besides.get()
+
+
+    Order.add_order(client_name, phone_number, technique, equipment, malfunction, additionally)
+
+def update_time():
+    # time_label.config(text=f"{datetime.datetime.now():%H:%M:%S}")
+    window.after(100, update_time)
+
+
+window = Tk()
+window.title("Fix It")
+window.geometry('400x250')
+
+tab_control = ttk.Notebook(window)
+tab1 = ttk.Frame(tab_control)
+tab_control.add(tab1, text='Приёмка')
+
+tab2 = ttk.Frame(tab_control)
+tab_control.add(tab2, text='В работе')
+tab_control.pack(expand=1, fill='both')
+
+# time_label = Label(window)
+# time_label.grid(column=0, row=0)
+
+name = StringVar()
+full_name = Label(tab1, text="ФИО")
+full_name.grid(column=0, row=0)
+enter_client_name = Entry(tab1,width=30, textvariable=name)
+enter_client_name.grid(column=1, row=0)
+
+
+phone = StringVar()
+number = Label(tab1, text="Номер")
+number.grid(column=0, row=1)
+enter_phone_number = Entry(tab1,width=30, textvariable=phone)  
+enter_phone_number.grid(column=1, row=1)
+
+
+technic = StringVar()
+technique_of_client = Label(tab1, text="Устройство")
+technique_of_client.grid(column=0, row=2)
+enter_technic = Entry(tab1,width=30, textvariable=technic)  
+enter_technic.grid(column=1, row=2)
+
+
+kit = StringVar()
+kit_of_technic = Label(tab1, text="Комплектация")
+kit_of_technic.grid(column=0, row=3)
+enter_kit = Entry(tab1,width=30, textvariable=kit)  
+enter_kit.grid(column=1, row=3)
+
+defect = StringVar()
+malfunction_of_technic = Label(tab1, text="Заявленная неисправность")
+malfunction_of_technic.grid(column=0, row=4)
+enter_malfunction = Entry(tab1,width=30, textvariable=defect)  
+enter_malfunction.grid(column=1, row=4)
+
+
+besides = StringVar()
+add = Label(tab1, text="Дополнительно")
+add.grid(column=0, row=5)
+enter_additionally = Entry(tab1,width=30, textvariable=besides)  
+enter_additionally.grid(column=1, row=5)
+
+
+button_save = Button(tab1, text="Сохранить", command=save_btn)
+button_save.grid(column=1, row=6)
+
+
+orders_listbox = Listbox(tab2, width=340, height=50)
+
+if FileProvider.exist('orders.json'):
+    list_orders_code = FileProvider.get('orders.json')
+    list_orders = jsonpickle.decode(list_orders_code)
+else:
+    list_orders = []
+
+ 
+for technique in range(len(list_orders)):
+    orders_listbox.insert(END, list_orders[technique].technique)
+
+orders_listbox.pack()
+
+window.mainloop()
