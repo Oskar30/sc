@@ -1,9 +1,7 @@
 from tkinter import *
-from tkinter import ttk, messagebox
+from tkinter import ttk
 
-import datetime
-import os
-import jsonpickle
+import os, jsonpickle, datetime
 jsonpickle.set_encoder_options('json', indent=4, separators=(',', ': '), ensure_ascii=False)
 
 
@@ -55,17 +53,74 @@ def save_btn():
     malfunction = defect.get()
     additionally = besides.get()
 
-
     Order.add_order(client_name, phone_number, technique, equipment, malfunction, additionally)
+
+def clear_btn():
+    enter_client_name.delete(0, END)
+    enter_phone_number.delete(0, END)
+    enter_technic.delete(0, END)
+    enter_kit.delete(0, END)
+    enter_malfunction.delete(0, END)
+    enter_additionally.delete(0, END)
+
 
 def update_time():
     # time_label.config(text=f"{datetime.datetime.now():%H:%M:%S}")
     window.after(100, update_time)
 
 
+def double_click_info(event):
+    order_info = Toplevel()
+    order_info.geometry('400x250')
+    index = orders_listbox.curselection()[0]
+
+    def in_archive_btn():
+        if FileProvider.exist('archive.json'):
+            list_archive_code = FileProvider.get('archive.json')
+            list_archive = jsonpickle.decode(list_archive_code)
+        else:
+            list_archive = []
+        
+        list_orders_code = FileProvider.get('orders.json')
+        list_orders = jsonpickle.decode(list_orders_code)
+
+        list_archive.append(list_orders[index])
+        new_list_archive_code = jsonpickle.encode(list_archive)
+        FileProvider.update_file('archive.json', new_list_archive_code)
+
+        list_orders.pop(index)
+        new_list_orders_code = jsonpickle.encode(list_orders)
+        FileProvider.update_file('orders.json', new_list_orders_code)
+
+
+        print(123)
+
+    order_info.title(list_orders[index].technique)
+   
+    client_name_info = Label(order_info, text=list_orders[index].client_name)
+    client_name_info.grid(column=0, row=0)
+
+    phone_number_info = Label(order_info, text=list_orders[index].phone_number)
+    phone_number_info.grid(column=0, row=1)
+
+    technique_info = Label(order_info, text=list_orders[index].technique)
+    technique_info.grid(column=0, row=2)
+
+    equipment_info = Label(order_info, text=list_orders[index].equipment)
+    equipment_info.grid(column=0, row=3)
+
+    malfunction_info = Label(order_info, text=list_orders[index].malfunction)
+    malfunction_info.grid(column=0, row=4)
+
+    additionally_info = Label(order_info, text=list_orders[index].additionally)
+    additionally_info.grid(column=0, row=5)
+
+    in_archive = Button(order_info, text="В архив", command=in_archive_btn).grid(column=0, row=6)
+
+
 window = Tk()
 window.title("Fix It")
-window.geometry('400x250')
+window.geometry('800x600')
 
 tab_control = ttk.Notebook(window)
 tab1 = ttk.Frame(tab_control)
@@ -73,6 +128,10 @@ tab_control.add(tab1, text='Приёмка')
 
 tab2 = ttk.Frame(tab_control)
 tab_control.add(tab2, text='В работе')
+
+tab3 = ttk.Frame(tab_control)
+tab_control.add(tab3, text='Архив')
+
 tab_control.pack(expand=1, fill='both')
 
 # time_label = Label(window)
@@ -119,22 +178,34 @@ enter_additionally = Entry(tab1,width=30, textvariable=besides)
 enter_additionally.grid(column=1, row=5)
 
 
-button_save = Button(tab1, text="Сохранить", command=save_btn)
-button_save.grid(column=1, row=6)
+button_save = Button(tab1, text="Сохранить", command=save_btn).grid(column=0, row=6, sticky='we')
 
+button_clear = Button(tab1, text="Очистить", command=clear_btn).grid(column=1, row=6, sticky='we')
 
 orders_listbox = Listbox(tab2, width=340, height=50)
 
 if FileProvider.exist('orders.json'):
     list_orders_code = FileProvider.get('orders.json')
     list_orders = jsonpickle.decode(list_orders_code)
-else:
-    list_orders = []
+    for technique in range(len(list_orders)):
+        orders_listbox.insert(END, list_orders[technique].technique)
 
- 
-for technique in range(len(list_orders)):
-    orders_listbox.insert(END, list_orders[technique].technique)
+
+orders_listbox.bind('<Double-Button-1>', double_click_info)
+
 
 orders_listbox.pack()
+
+
+
+archive_listbox = Listbox(tab3, width=340, height=50)
+
+if FileProvider.exist('archive.json'):
+    list_archive_code = FileProvider.get('archive.json')
+    list_archive = jsonpickle.decode(list_archive_code)
+    for technique in range(len(list_archive)):
+        archive_listbox.insert(END, list_archive[technique].technique)
+
+archive_listbox.pack()
 
 window.mainloop()
