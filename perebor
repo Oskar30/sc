@@ -1,0 +1,7 @@
+a = ['btc', 'dog', 'ltn', 'cat', 'eth']
+inp = 'c'
+for i in range (len(a)):
+    for k in range (len(a[i])):
+        if a[i][k] == inp:
+            print(a[i])
+            break
