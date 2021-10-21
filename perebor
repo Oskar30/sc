@@ -1,7 +1,6 @@
-a = ['btc', 'dog', 'ltn', 'cat', 'eth']
-inp = 'c'
+coin = input('начните вводить название коина: ')
 for i in range (len(a)):
     for k in range (len(a[i])):
-        if a[i][k] == inp:
+        if a[i][k] == coin:
             print(a[i])
             break
