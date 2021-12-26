@@ -1,4 +1,6 @@
 import csv
+import urllib3
+http = urllib3.PoolManager()
 
 full_list = []
 with open('city.csv', encoding="utf-8") as f:
@@ -18,4 +20,12 @@ for i in range(len(full_list)):
 zapros_list.pop(0)
 
 for j in range(len(zapros_list)):
-    print(zapros_list[j])
+    ur = 'https://www.google.ru/maps/search/'
+    url = ur + zapros_list[j]
+print(url)
+
+
+resp = http.request('GET', url)
+ch = resp.data.decode('utf-8')
+cc = str(ch)
+print(cc)
