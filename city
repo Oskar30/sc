@@ -1,0 +1,21 @@
+import csv
+
+full_list = []
+with open('city.csv', encoding="utf-8") as f:
+    reader = csv.reader(f)
+    for row in reader:
+        full_list.append(row)
+zapros_list = []
+for i in range(len(full_list)):
+    if len(full_list[i]) < 3:
+        continue
+    to4ka = full_list[i]
+    word1 = str(to4ka[4])
+    word2 = str(to4ka[2])
+    word3 = str(to4ka[1])
+    zapros = word1 + '. ' + word2 + '. ' + word3
+    zapros_list.append(zapros)
+zapros_list.pop(0)
+
+for j in range(len(zapros_list)):
+    print(zapros_list[j])
